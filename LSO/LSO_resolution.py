@@ -49,6 +49,32 @@ def gaussian_skew(x,A,x0,sigma,alpha,m,q):
     """ 
     return gauss(x,A,x0,sigma,m,q)*(1+erf(alpha*(x-x0)/sigma))
 
+def kn(x):
+    #devo calibrare, voglio x in kev
+    #per il primo caso approssimo e viene 
+    #x=x*511/3.93
+    a=x/511
+    r=2.818     #fm
+    b=(1-2*(a+1)/(a*a))*np.log(2*a+1)
+    c=1/(2*(2*a +1)**2)
+    sigma=np.pi*r*r/a*(b+0.5+4/a -c)
+    ''' plt.figure()
+        a=xdata[0]*511/3.93
+        b=xdata[-1]*511/3.93
+        di=int(b-a)
+        xprova_histo=np.linspace(a,b,len(ydata))
+        xprova=np.linspace(a,b,1000)
+        #ydata,edges,__ = plt.hist(data_0,bins=100)
+        rr=7.4*0.87*1.5
+        plt.plot(xprova,rr*kn(xprova),label='KN')
+        plt.plot(xprova_histo,ydata,label='data')
+        plt.plot(xprova_histo,ydata-rr*kn(xprova_histo),label='y-kn')
+        plt.xlabel('Energy [Kev]')
+        plt.ylabel('c.s [fm]')
+        plt.legend()
+        plt.show()'''
+    return sigma
+
 def chi2(xdata,ydata,f,*popt):
     """
     This function returns chi squared value.
