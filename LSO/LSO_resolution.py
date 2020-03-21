@@ -111,38 +111,39 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
     x_fit=np.linspace(xdata_fit[0],xdata_fit[-1],1000)
 
     if ( _ == 0):
-        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
         ''' popt,pcov = curve_fit(gaussian_KleinNishina, xdata_fit, ydata_fit,p0=parametri)
         y_fit_1=gaussian_KleinNishina(xdata_fit,*popt)
         y_fit=ydata_fit-gaussian_KleinNishina(xdata_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
     elif ( _ == 1):
-        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
     elif ( _ == 2):
         popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
         y_fit=dg(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
     elif ( _ == 3):
-        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
     else :
         popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
         y_fit=dg(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
+    inc=np.sqrt(pcov.diagonal())
     
     if args.show is not None:
     
@@ -156,7 +157,7 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         plt.grid()
         plt.legend()
         plt.show()
-    return popt,chiquadro
+    return popt,inc,chiquadro
 
 
 
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     f = open('results/risoluzione.txt', 'w') 
-    f.write('{} \t{} \t \n '.format('Nome','Risoluzione'))
+    f.write('{} \t{} \t{} \t{} \t{} \t{} \t \n '.format('Name','Res1','sigma(Res1)','Res2','sigma(Res2)','chi_square'))
     file_grezzi = glob.glob('*.csv')
     change_extension(file_grezzi)
     files = glob.glob('*txt') 
@@ -190,14 +191,14 @@ if __name__ == '__main__':
         Find the border channels (extremes) manually defining parameters.
         """
         if ( _ == 0):
-            #parametri=(100,3.93,0.5)         #gauss
-            parametri=(100,3.93,0.5,-4)     #skew_gauss 
+            parametri=(100,3.93,0.5)         #gauss
+            #parametri=(100,3.93,0.5,-4)     #skew_gauss 
             #parametri =(50,3.93,0.5,50)     #gaussian KN
             first_extreme=3.21
             second_extreme=4.65
         elif ( _ == 1):
-            #parametri=(100,3.35,0.5)        #gauss
-            parametri=(100,3.35,0.5,-4)     #skew_gauss
+            parametri=(100,3.35,0.5)        #gauss
+            #parametri=(100,3.35,0.5,-4)     #skew_gauss
             #parametri =(50,3.35,0.5,50)     #gaussian KN
             first_extreme=2.59
             second_extreme=4.27
@@ -206,8 +207,8 @@ if __name__ == '__main__':
             first_extreme=1.61
             second_extreme=3.09
         elif ( _ == 3):
-            #parametri=(100,2.76,0.5)        #gauss
-            parametri=(100,2.76,0.5,-4)     #skew_gauss
+            parametri=(100,2.76,0.5)        #gauss
+            #parametri=(100,2.76,0.5,-4)     #skew_gauss
             #parametri =(50,2.76,0.5,50)     #gaussian KN
             first_extreme=2.44
             second_extreme=3.2
@@ -221,15 +222,20 @@ if __name__ == '__main__':
         """
         m,q=linear(xdata,ydata,first_extreme,second_extreme)
         parametri=parametri + (m,) + (q,)
-        popt,chiquadro=fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item)
+        popt,u,chiquadro=fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item)
 
         if (_ == 2 or _ == 4):
             R1=2.35*popt[5]/popt[4]
             R2=2.35*popt[2]/popt[1]
+            uR1=2.35*np.sqrt((u[5]/popt[4])**2 + (popt[5]*u[4]/(popt[4]**2))**2)
+            uR2=2.35*np.sqrt((u[2]/popt[1])**2 + (popt[2]*u[1]/(popt[1]**2))**2)
         else:
             R1 = 2.35*popt[2]/popt[1]
             R2=0
+            uR1=2.35*np.sqrt((u[2]/popt[1])**2 + (popt[2]*u[1]/(popt[1]**2))**2)
+            uR2=0
+
         logging.info('R = {} , {} , {}'.format(R1,R2, chiquadro))
 
-        f.write('{} \t{} \t{} \t{} \t \n '.format(item,R1,R2, chiquadro))
+        f.write('{} \t{} \t{} \t{} \t{} \t{} \t \n '.format(item,R1,uR1,R2,uR2,chiquadro))
     f.close()
