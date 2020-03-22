@@ -111,16 +111,12 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
     x_fit=np.linspace(xdata_fit[0],xdata_fit[-1],1000)
 
     if ( _ == 0):
-        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
-        ''' popt,pcov = curve_fit(gaussian_KleinNishina, xdata_fit, ydata_fit,p0=parametri)
-        y_fit_1=gaussian_KleinNishina(xdata_fit,*popt)
-        y_fit=ydata_fit-gaussian_KleinNishina(xdata_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
     elif ( _ == 1):
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
@@ -128,21 +124,13 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
-    elif ( _ == 2):
-        popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
-        y_fit=dg(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
-    elif ( _ == 3):
+    else :
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
         popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
-    else :
-        popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
-        y_fit=dg(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
     inc=np.sqrt(pcov.diagonal())
     
     if args.show is not None:
@@ -178,7 +166,7 @@ if __name__ == '__main__':
         """
         Load the file and obtain the histogram.
         """
-        data_0 = np.loadtxt(item)
+        data_0 = np.loadtxt(files[1])
         plt.title('Spectrum of {}'.format(item))
         ydata,edges,__ = plt.hist(data_0,bins=100)
         xdata = 0.5 * (edges[1:] + edges[:-1])
@@ -191,31 +179,23 @@ if __name__ == '__main__':
         Find the border channels (extremes) manually defining parameters.
         """
         if ( _ == 0):
+            parametri=(100,4.76,0.5)         #gauss
+            #parametri=(100,4.76,0.5,-4)     #skew_gauss 
+            #parametri =(50,3.93,0.5,50)     #gaussian KN
+            first_extreme=3.44
+            second_extreme=6.79
+        elif ( _ == 1):
+            #parametri=(100,3.35,0.5)        #gauss
+            parametri=(100,3.35,0.5,-4)     #skew_gauss
+            #parametri =(50,3.35,0.5,50)     #gaussian KN
+            first_extreme=3.36
+            second_extreme=6.6
+        else :
             #parametri=(100,3.93,0.5)         #gauss
             parametri=(100,3.93,0.5,-4)     #skew_gauss 
             #parametri =(50,3.93,0.5,50)     #gaussian KN
             first_extreme=3.21
             second_extreme=4.65
-        elif ( _ == 1):
-            #parametri=(100,3.35,0.5)        #gauss
-            parametri=(100,3.35,0.5,-4)     #skew_gauss
-            #parametri =(50,3.35,0.5,50)     #gaussian KN
-            first_extreme=2.59
-            second_extreme=4.27
-        elif ( _ == 2):
-            parametri=(3140,2.486,0.1881,3100,2.175,0.492)
-            first_extreme=1.61
-            second_extreme=3.09
-        elif ( _ == 3):
-            #parametri=(100,2.76,0.5)        #gauss
-            parametri=(100,2.76,0.5,-2)     #skew_gauss
-            #parametri =(50,2.76,0.5,50)     #gaussian KN
-            first_extreme=2.44
-            second_extreme=3.2
-        else :
-            parametri=(5766,2.504,0.1836,3007,2.061,0.2861)
-            first_extreme=1.61
-            second_extreme=3.09
 
         """
         Find straight line between extreme points and perform the fit.
@@ -224,16 +204,10 @@ if __name__ == '__main__':
         parametri=parametri + (m,) + (q,)
         popt,u,chiquadro=fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item)
 
-        if (_ == 2 or _ == 4):
-            R1=2.35*popt[5]/popt[4]
-            R2=2.35*popt[2]/popt[1]
-            uR1=2.35*np.sqrt((u[5]/popt[4])**2 + (popt[5]*u[4]/(popt[4]**2))**2)
-            uR2=2.35*np.sqrt((u[2]/popt[1])**2 + (popt[2]*u[1]/(popt[1]**2))**2)
-        else:
-            R1 = 2.35*popt[2]/popt[1]
-            R2=0
-            uR1=2.35*np.sqrt((u[2]/popt[1])**2 + (popt[2]*u[1]/(popt[1]**2))**2)
-            uR2=0
+        R1 = 2.35*popt[2]/popt[1]
+        R2=0
+        uR1=2.35*np.sqrt((u[2]/popt[1])**2 + (popt[2]*u[1]/(popt[1]**2))**2)
+        uR2=0
 
         logging.info('R = {} , {} , {}'.format(R1,R2, chiquadro))
 
