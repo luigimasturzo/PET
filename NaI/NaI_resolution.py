@@ -83,8 +83,8 @@ def chi2(xdata,ydata,f,*popt):
     chi2 = sum(((ydata[mask] - f(xdata[mask], *popt)) / np.sqrt(ydata[mask]))**2.)
     nu = mask.sum() - len(popt)
     sigma = np.sqrt(2 * nu)
-    print('chi_square     = {}'.format(chi2/nu))
-    print('expected value = {} +/- {}'.format(nu,sigma))
+    print('chi_square nrm    = {}'.format(chi2/nu))
+    #print('expected value = {} +/- {}'.format(nu,sigma))
     return chi2/nu
 
 def linear(xdata,ydata,first_extreme,second_extreme):
@@ -118,19 +118,19 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         y_fit=gaussian_skew(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
     elif ( _ == 1):
-        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
     else :
-        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
     inc=np.sqrt(pcov.diagonal())
     
     if args.show is not None:
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         """
         Load the file and obtain the histogram.
         """
-        data_0 = np.loadtxt(files[1])
+        data_0 = np.loadtxt(item)
         plt.title('Spectrum of {}'.format(item))
         ydata,edges,__ = plt.hist(data_0,bins=100)
         xdata = 0.5 * (edges[1:] + edges[:-1])
@@ -179,23 +179,23 @@ if __name__ == '__main__':
         Find the border channels (extremes) manually defining parameters.
         """
         if ( _ == 0):
-            parametri=(100,4.76,0.5)         #gauss
-            #parametri=(100,4.76,0.5,-4)     #skew_gauss 
-            #parametri =(50,3.93,0.5,50)     #gaussian KN
-            first_extreme=3.44
-            second_extreme=6.79
+            parametri=(100,1.31,0.1)         #gauss
+            #parametri=(100,1.31,0.1,-1)     #skew_gauss 
+            #parametri =(50,3.93,0.1,50)     #gaussian KN
+            first_extreme=1.19
+            second_extreme=1.39
         elif ( _ == 1):
-            #parametri=(100,3.35,0.5)        #gauss
-            parametri=(100,3.35,0.5,-4)     #skew_gauss
-            #parametri =(50,3.35,0.5,50)     #gaussian KN
-            first_extreme=3.36
-            second_extreme=6.6
+            parametri=(100,0.56,0.1)        #gauss
+            #parametri=(100,0.56,0.1,-1)     #skew_gauss
+            #parametri =(50,3.35,0.1,50)     #gaussian KN
+            first_extreme=0.47
+            second_extreme=0.67
         else :
-            #parametri=(100,3.93,0.5)         #gauss
-            parametri=(100,3.93,0.5,-4)     #skew_gauss 
-            #parametri =(50,3.93,0.5,50)     #gaussian KN
-            first_extreme=3.21
-            second_extreme=4.65
+            parametri=(100,1,0.1)         #gauss
+            #parametri=(100,1,0.1,-3)     #skew_gauss 
+            #parametri =(50,3.93,0.1,50)     #gaussian KN
+            first_extreme=0.91
+            second_extreme=1.19
 
         """
         Find straight line between extreme points and perform the fit.
