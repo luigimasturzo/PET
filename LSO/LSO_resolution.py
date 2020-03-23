@@ -50,30 +50,18 @@ def gaussian_skew(x,A,x0,sigma,alpha,m,q):
     return gauss(x,A,x0,sigma,m,q)+erf(alpha*(x-x0)/sigma)
 
 def kn(x):
-    #devo calibrare, voglio x in kev
-    #per il primo caso approssimo e viene 
-    #x=x*511/3.93
-    a=x/511
-    r=2.818     #fm
-    b=(1-2*(a+1)/(a*a))*np.log(2*a+1)
-    c=1/(2*(2*a +1)**2)
-    sigma=np.pi*r*r/a*(b+0.5+4/a -c)
-    ''' plt.figure()
-        a=xdata[0]*511/3.93
-        b=xdata[-1]*511/3.93
-        di=int(b-a)
-        xprova_histo=np.linspace(a,b,len(ydata))
-        xprova=np.linspace(a,b,1000)
-        #ydata,edges,__ = plt.hist(data_0,bins=100)
-        rr=7.4*0.87*1.5
-        plt.plot(xprova,rr*kn(xprova),label='KN')
-        plt.plot(xprova_histo,ydata,label='data')
-        plt.plot(xprova_histo,ydata-rr*kn(xprova_histo),label='y-kn')
-        plt.xlabel('Energy [Kev]')
-        plt.ylabel('c.s [fm]')
-        plt.legend()
-        plt.show()'''
+    E=511   #energia del gamma incidente
+    ct = 1 - (511 / E) * (E/x -1)
+    r = 2.81*10**(-13)    #cm
+    a =r*r*((1 + ct**2) / 2)
+    b = 1/((1 + E**2 *(1 - ct))**2)
+    c =1 + ((E*(1-ct)**2) / ( (1 + ct**2)*(1 + E*(1-ct)) ) )
+    sigma=a*b+c
     return sigma
+
+def fitfinale(x, C, mu, sigma, m, q, A):
+    return C * norm.pdf(x, mu, sigma) - m*x + q + A*kn(x)
+
 
 def chi2(xdata,ydata,f,*popt):
     """
@@ -114,9 +102,12 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
+        popt,pcov = curve_fit(fitfinale, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
         ''' popt,pcov = curve_fit(gaussian_KleinNishina, xdata_fit, ydata_fit,p0=parametri)
         y_fit_1=gaussian_KleinNishina(xdata_fit,*popt)
         y_fit=ydata_fit-gaussian_KleinNishina(xdata_fit,*popt)
@@ -125,9 +116,12 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
+        popt,pcov = curve_fit(fitfinale, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     elif ( _ == 2):
         popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
         y_fit=dg(x_fit,*popt)
@@ -136,14 +130,18 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
-        popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
+        popt,pcov = curve_fit(fitfinale, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     else :
         popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
         y_fit=dg(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
     inc=np.sqrt(pcov.diagonal())
+    print('000 -> A = {}'.format(popt[3]))
     
     if args.show is not None:
     
@@ -192,14 +190,16 @@ if __name__ == '__main__':
         """
         if ( _ == 0):
             #parametri=(100,3.93,0.5)         #gauss
-            parametri=(100,3.93,0.5,-4)     #skew_gauss 
+            #parametri=(100,3.93,0.5,-4)     #skew_gauss 
             #parametri =(50,3.93,0.5,50)     #gaussian KN
+            parametri=(100,3.93,0.5,1106720)        #fit finale
             first_extreme=3.21
             second_extreme=4.65
         elif ( _ == 1):
             #parametri=(100,3.35,0.5)        #gauss
-            parametri=(100,3.35,0.5,-4)     #skew_gauss
+            #parametri=(100,3.35,0.5,-4)     #skew_gauss
             #parametri =(50,3.35,0.5,50)     #gaussian KN
+            parametri=(100,3.35,0.5,1106720)        #fit finale
             first_extreme=2.59
             second_extreme=4.27
         elif ( _ == 2):
@@ -208,8 +208,9 @@ if __name__ == '__main__':
             second_extreme=3.09
         elif ( _ == 3):
             #parametri=(100,2.76,0.5)        #gauss
-            parametri=(100,2.76,0.5,-2)     #skew_gauss
+            #parametri=(100,2.76,0.5,-2)     #skew_gauss
             #parametri =(50,2.76,0.5,50)     #gaussian KN
+            parametri=(100,2.76,0.5,1106720)    #fitfinale
             first_extreme=2.44
             second_extreme=3.2
         else :
