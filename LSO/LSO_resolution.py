@@ -192,14 +192,14 @@ if __name__ == '__main__':
             #parametri=(100,3.93,0.5)         #gauss
             #parametri=(100,3.93,0.5,-4)     #skew_gauss 
             #parametri =(50,3.93,0.5,50)     #gaussian KN
-            parametri=(100,3.93,0.5,1106720)        #fit finale
+            parametri=(100,3.93,0.5)        #fit finale
             first_extreme=3.21
             second_extreme=4.65
         elif ( _ == 1):
             #parametri=(100,3.35,0.5)        #gauss
             #parametri=(100,3.35,0.5,-4)     #skew_gauss
             #parametri =(50,3.35,0.5,50)     #gaussian KN
-            parametri=(100,3.35,0.5,1106720)        #fit finale
+            parametri=(100,3.35,0.5)        #fit finale
             first_extreme=2.59
             second_extreme=4.27
         elif ( _ == 2):
@@ -210,7 +210,7 @@ if __name__ == '__main__':
             #parametri=(100,2.76,0.5)        #gauss
             #parametri=(100,2.76,0.5,-2)     #skew_gauss
             #parametri =(50,2.76,0.5,50)     #gaussian KN
-            parametri=(100,2.76,0.5,1106720)    #fitfinale
+            parametri=(100,2.76,0.5)    #fitfinale
             first_extreme=2.44
             second_extreme=3.2
         else :
@@ -222,7 +222,11 @@ if __name__ == '__main__':
         Find straight line between extreme points and perform the fit.
         """
         m,q=linear(xdata,ydata,first_extreme,second_extreme)
-        parametri=parametri + (m,) + (q,)
+        if(_ == 0 or _ == 1 or _ == 3):
+            a=110
+            parametri=parametri + (m,) + (q,) + (a,)
+        else:
+            parametri=parametri + (m,) + (q,)
         popt,u,chiquadro=fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item)
 
         if (_ == 2 or _ == 4):
