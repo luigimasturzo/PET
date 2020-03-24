@@ -50,30 +50,17 @@ def gaussian_skew(x,A,x0,sigma,alpha,m,q):
     return gauss(x,A,x0,sigma,m,q)+erf(alpha*(x-x0)/sigma)
 
 def kn(x):
-    #devo calibrare, voglio x in kev
-    #per il primo caso approssimo e viene 
-    #x=x*511/3.93
-    a=x/511
-    r=2.818     #fm
-    b=(1-2*(a+1)/(a*a))*np.log(2*a+1)
-    c=1/(2*(2*a +1)**2)
-    sigma=np.pi*r*r/a*(b+0.5+4/a -c)
-    ''' plt.figure()
-        a=xdata[0]*511/3.93
-        b=xdata[-1]*511/3.93
-        di=int(b-a)
-        xprova_histo=np.linspace(a,b,len(ydata))
-        xprova=np.linspace(a,b,1000)
-        #ydata,edges,__ = plt.hist(data_0,bins=100)
-        rr=7.4*0.87*1.5
-        plt.plot(xprova,rr*kn(xprova),label='KN')
-        plt.plot(xprova_histo,ydata,label='data')
-        plt.plot(xprova_histo,ydata-rr*kn(xprova_histo),label='y-kn')
-        plt.xlabel('Energy [Kev]')
-        plt.ylabel('c.s [fm]')
-        plt.legend()
-        plt.show()'''
+    E=511   #energia del gamma incidente
+    ct = 1 - (511 / E) * (E/x -1)
+    r = 2.81*10**(-13)    #cm
+    a =r*r*((1 + ct**2) / 2)
+    b = 1/((1 + E**2 *(1 - ct))**2)
+    c =1 + ((E*(1-ct)**2) / ( (1 + ct**2)*(1 + E*(1-ct)) ) )
+    sigma=a*b+c
     return sigma
+
+def fitfinale(x, C, mu, sigma, m, q, A):
+    return C * norm.pdf(x, mu, sigma) - m*x + q + A*kn(x)
 
 def chi2(xdata,ydata,f,*popt):
     """
@@ -111,26 +98,35 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
     x_fit=np.linspace(xdata_fit[0],xdata_fit[-1],1000)
 
     if ( _ == 0):
-        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
         '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
+        popt,pcov = curve_fit(fitfinale, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     elif ( _ == 1):
-        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
         '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
+        popt,pcov = curve_fit(fitfinale, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     else :
-        popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,gauss,*popt)'''
         '''popt,pcov = curve_fit(gaussian_skew, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gaussian_skew(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,gaussian_skew,*popt)'''
+        popt,pcov = curve_fit(fitfinale, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     inc=np.sqrt(pcov.diagonal())
     
     if args.show is not None:
@@ -138,7 +134,7 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         #mask=y_fit >0
         plt.figure()
         plt.title('Fit of {} spectrum'.format(item))
-        ydata,edges,_ = plt.hist(data_0,bins=100,label='Histo')
+        ydata,edges,_ = plt.hist(data_0,bins=n,label='Histo')
         plt.plot(x_fit,y_fit,label='Fit')
         plt.xlabel('Energia [a.u]')
         plt.ylabel('Eventi [a.u]')
@@ -153,22 +149,29 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=_description)
     parser.add_argument('-s', '--show', help='Do you want to show the images?')
     args = parser.parse_args()
+    
 
     f = open('results/risoluzione.txt', 'w') 
-    f.write('{} \t{} \t{} \t{} \t{} \t{} \t \n '.format('Name','Res1','sigma(Res1)','Res2','sigma(Res2)','chi_square'))
+    f.write('{} \t{} \t{} \t{} \t \n '.format('Name','Res1','sigma(Res1)','chi_square'))
     file_grezzi = glob.glob('*.csv')
     change_extension(file_grezzi)
     files = glob.glob('*txt') 
     for _, item in enumerate(files):
         print('----- {} -----'.format(item))
         print(_)
-
+        if ( _ == 0):
+            n=400
+        elif ( _ == 1):
+            n=250
+        else :
+            n=250
+        
         """
         Load the file and obtain the histogram.
         """
         data_0 = np.loadtxt(item)
         plt.title('Spectrum of {}'.format(item))
-        ydata,edges,__ = plt.hist(data_0,bins=100)
+        ydata,edges,__ = plt.hist(data_0,bins=n)
         xdata = 0.5 * (edges[1:] + edges[:-1])
         plt.grid()
         plt.xlabel('Energia [a.u]')
@@ -179,19 +182,19 @@ if __name__ == '__main__':
         Find the border channels (extremes) manually defining parameters.
         """
         if ( _ == 0):
-            parametri=(100,1.31,0.1)         #gauss
+            parametri=(300,1.31,0.1)         #gauss
             #parametri=(100,1.31,0.1,-1)     #skew_gauss 
             #parametri =(50,3.93,0.1,50)     #gaussian KN
             first_extreme=1.19
-            second_extreme=1.39
+            second_extreme=1.4
         elif ( _ == 1):
-            parametri=(100,0.56,0.1)        #gauss
+            parametri=(300,0.56,0.1)        #gauss
             #parametri=(100,0.56,0.1,-1)     #skew_gauss
             #parametri =(50,3.35,0.1,50)     #gaussian KN
             first_extreme=0.47
             second_extreme=0.67
         else :
-            parametri=(100,1,0.1)         #gauss
+            parametri=(300,1,0.1)         #gauss
             #parametri=(100,1,0.1,-3)     #skew_gauss 
             #parametri =(50,3.93,0.1,50)     #gaussian KN
             first_extreme=0.91
@@ -201,15 +204,18 @@ if __name__ == '__main__':
         Find straight line between extreme points and perform the fit.
         """
         m,q=linear(xdata,ydata,first_extreme,second_extreme)
-        parametri=parametri + (m,) + (q,)
+        if ( _ == 0):
+            a=210#29593140
+        elif ( _ == 1):
+            a=210
+        else :
+            a=500
+        parametri=parametri + (m,) + (q,) +(a,)
         popt,u,chiquadro=fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item)
 
         R1 = 2.35*popt[2]/popt[1]
-        R2=0
         uR1=2.35*np.sqrt((u[2]/popt[1])**2 + (popt[2]*u[1]/(popt[1]**2))**2)
-        uR2=0
+        logging.info('R = {} , {}'.format(R1, chiquadro))
 
-        logging.info('R = {} , {} , {}'.format(R1,R2, chiquadro))
-
-        f.write('{} \t{} \t{} \t{} \t{} \t{} \t \n '.format(item,R1,uR1,R2,uR2,chiquadro))
+        f.write('{} \t{} \t{} \t{} \t \n '.format(item,R1,uR1,chiquadro))
     f.close()

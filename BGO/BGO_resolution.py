@@ -135,7 +135,7 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         #mask=y_fit >0
         plt.figure()
         plt.title('Fit of {} spectrum'.format(item))
-        ydata,edges,_ = plt.hist(data_0,bins=100,label='Histo')
+        ydata,edges,_ = plt.hist(data_0,bins=n,label='Histo')
         plt.plot(x_fit,y_fit,label='Fit')
         plt.xlabel('Energia [a.u]')
         plt.ylabel('Eventi [a.u]')
@@ -163,13 +163,19 @@ if __name__ == '__main__':
     for _, item in enumerate(files):
         print('----- {} -----'.format(item))
         print(_)
+        if ( _ == 0):
+            n=400
+        elif ( _ == 1):
+            n=250
+        else :
+            n=250
 
         """
         Load the file and obtain the histogram.
         """
         data_0 = np.loadtxt(item)
         plt.title('Spectrum of {}'.format(item))
-        ydata,edges,__ = plt.hist(data_0,bins=100)
+        ydata,edges,__ = plt.hist(data_0,bins=n)
         xdata = 0.5 * (edges[1:] + edges[:-1])
         plt.grid()
         plt.xlabel('Energia [a.u]')
@@ -203,7 +209,7 @@ if __name__ == '__main__':
         """
         m,q=linear(xdata,ydata,first_extreme,second_extreme)
         if ( _ == 0):
-            a=7557630#29593140
+            a=7557630
         elif ( _ == 1):
             a=210
         else :

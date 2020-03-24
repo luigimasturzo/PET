@@ -62,6 +62,8 @@ def kn(x):
 def fitfinale(x, C, mu, sigma, m, q, A):
     return C * norm.pdf(x, mu, sigma) - m*x + q + A*kn(x)
 
+def fitfinale2(x,a1,b1,c1,a2,b2,c2,m,q,A):
+    return dg(x,a1,b1,c1,a2,b2,c2,m,q) + A*kn(x)
 
 def chi2(xdata,ydata,f,*popt):
     """
@@ -123,9 +125,12 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         y_fit=fitfinale(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     elif ( _ == 2):
-        popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
         y_fit=dg(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)'''
+        popt,pcov = curve_fit(fitfinale2, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale2(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale2,*popt)
     elif ( _ == 3):
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
         y_fit=gauss(x_fit,*popt)
@@ -137,9 +142,12 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         y_fit=fitfinale(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,fitfinale,*popt)
     else :
-        popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
+        '''popt,pcov = curve_fit(dg, xdata_fit, ydata_fit,p0=parametri)
         y_fit=dg(x_fit,*popt)
-        chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,dg,*popt)'''
+        popt,pcov = curve_fit(fitfinale2, xdata_fit, ydata_fit,p0=parametri)
+        y_fit=fitfinale2(x_fit,*popt)
+        chiquadro=chi2(xdata_fit,ydata_fit,fitfinale2,*popt)
     inc=np.sqrt(pcov.diagonal())
     print('000 -> A = {}'.format(popt[3]))
     
@@ -148,7 +156,7 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         #mask=y_fit >0
         plt.figure()
         plt.title('Fit of {} spectrum'.format(item))
-        ydata,edges,_ = plt.hist(data_0,bins=100,label='Histo')
+        ydata,edges,_ = plt.hist(data_0,bins=n,label='Histo')
         plt.plot(x_fit,y_fit,label='Fit')
         plt.xlabel('Energia [a.u]')
         plt.ylabel('Eventi [a.u]')
@@ -172,13 +180,23 @@ if __name__ == '__main__':
     for _, item in enumerate(files):
         print('----- {} -----'.format(item))
         print(_)
+        if ( _ == 0):
+            n=400
+        elif ( _ == 1):
+            n=400
+        elif ( _ == 2):
+            n=700
+        elif ( _ == 3):
+            n=300
+        else :
+            n=700
 
         """
         Load the file and obtain the histogram.
         """
         data_0 = np.loadtxt(item)
         plt.title('Spectrum of {}'.format(item))
-        ydata,edges,__ = plt.hist(data_0,bins=100)
+        ydata,edges,__ = plt.hist(data_0,bins=n)
         xdata = 0.5 * (edges[1:] + edges[:-1])
         plt.grid()
         plt.xlabel('Energia [a.u]')
@@ -226,7 +244,8 @@ if __name__ == '__main__':
             a=110
             parametri=parametri + (m,) + (q,) + (a,)
         else:
-            parametri=parametri + (m,) + (q,)
+            a=110
+            parametri=parametri + (m,) + (q,) + (a,)
         popt,u,chiquadro=fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item)
 
         if (_ == 2 or _ == 4):
