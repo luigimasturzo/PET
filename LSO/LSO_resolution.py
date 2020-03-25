@@ -54,16 +54,18 @@ def kn(x):
     ct = 1 - (511 / E) * (E/x -1)
     r = 2.81*10**(-13)    #cm
     a =r*r*((1 + ct**2) / 2)
-    b = 1/((1 + E**2 *(1 - ct))**2)
-    c =1 + ((E*(1-ct)**2) / ( (1 + ct**2)*(1 + E*(1-ct)) ) )
+    b = 1/((1 + E *(1 - ct))**2)
+    c =1 + ((E**2*(1-ct)**2) / ( (1 + ct**2)*(1 + E*(1-ct)) ) )
     sigma=a*b+c
     return sigma
 
 def fitfinale(x, C, mu, sigma, m, q, A):
     return C * norm.pdf(x, mu, sigma) - m*x + q + A*kn(x)
 
+
 def fitfinale2(x,a1,b1,c1,a2,b2,c2,m,q,A):
     return dg(x,a1,b1,c1,a2,b2,c2,m,q) + A*kn(x)
+
 
 def chi2(xdata,ydata,f,*popt):
     """
@@ -98,7 +100,7 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
     _c=np.where(xdata>second_extreme)
     xdata_fit=xdata[_b[0][0]:_c[0][0]-1]
     ydata_fit=ydata[_b[0][0]:_c[0][0]-1]
-    x_fit=np.linspace(xdata_fit[0],xdata_fit[-1],1000)
+    x_fit=np.linspace(xdata_fit[0],xdata_fit[-1],len(ydata_fit))
 
     if ( _ == 0):
         '''popt,pcov = curve_fit(gauss, xdata_fit, ydata_fit,p0=parametri)
@@ -149,8 +151,6 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         y_fit=fitfinale2(x_fit,*popt)
         chiquadro=chi2(xdata_fit,ydata_fit,fitfinale2,*popt)
     inc=np.sqrt(pcov.diagonal())
-    print('000 -> A = {}'.format(popt[3]))
-    
     if args.show is not None:
     
         #mask=y_fit >0
@@ -158,6 +158,8 @@ def fit(xdata,ydata,first_extreme,second_extreme,parametri,_,item):
         plt.title('Fit of {} spectrum'.format(item))
         ydata,edges,_ = plt.hist(data_0,bins=n,label='Histo')
         plt.plot(x_fit,y_fit,label='Fit')
+        plt.figure('data-fit')
+        plt.plot(x_fit,y_fit)
         plt.xlabel('Energia [a.u]')
         plt.ylabel('Eventi [a.u]')
         plt.grid()

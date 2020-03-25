@@ -205,7 +205,7 @@ if __name__ == '__main__':
         """
         m,q=linear(xdata,ydata,first_extreme,second_extreme)
         if ( _ == 0):
-            a=210#29593140
+            a=210
         elif ( _ == 1):
             a=210
         else :
